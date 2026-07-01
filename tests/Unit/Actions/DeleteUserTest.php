@@ -38,9 +38,8 @@ it('deletes the user owned workspaces, channels, and every message the user sent
         ->and(Workspace::query()->whereKey($workspace->id)->exists())->toBeFalse()
         ->and(Channel::query()->whereKey($channel->id)->exists())->toBeFalse()
         ->and(Message::query()->whereKey($ownedMessage->id)->exists())->toBeFalse()
-        ->and(Message::query()->whereKey($sentElsewhere->id)->exists())->toBeFalse();
-
-    expect(User::query()->whereKey($otherUser->id)->exists())->toBeTrue()
+        ->and(Message::query()->whereKey($sentElsewhere->id)->exists())->toBeFalse()
+        ->and(User::query()->whereKey($otherUser->id)->exists())->toBeTrue()
         ->and(Workspace::query()->whereKey($otherWorkspace->id)->exists())->toBeTrue()
         ->and(Channel::query()->whereKey($otherChannel->id)->exists())->toBeTrue();
 });
