@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
@@ -14,7 +13,7 @@ pest()->extend(TestCase::class)
     ->beforeEach(function (): void {
         Str::createRandomStringsNormally();
         Str::createUuidsNormally();
-        Http::preventStrayRequests();
+        // Http::preventStrayRequests();
         Process::preventStrayProcesses();
         Sleep::fake();
 
