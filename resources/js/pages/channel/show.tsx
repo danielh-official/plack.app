@@ -66,7 +66,7 @@ export default function ChannelShow({
     workspaces?: WorkspaceSummary[];
     canManage?: boolean;
 }) {
-    useEcho(`channels.${channel.id}`, 'MessageCreated', () => {
+    useEcho(`channels.${channel.id}`, '.MessageCreated', () => {
         router.reload({ only: ['messages'] });
     });
 
