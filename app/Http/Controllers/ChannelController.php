@@ -73,7 +73,7 @@ final readonly class ChannelController
             'message' => __('Channel updated.'),
         ]);
 
-        return back();
+        return to_route('channel.show', [$workspace, $channel]);
     }
 
     public function destroy(
