@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Models\Channel;
 use App\Models\User;
 use App\Models\Workspace;
 use Inertia\Support\SessionKey;
@@ -25,17 +26,13 @@ it('shows an empty state when the user has no workspaces', function (): void {
         );
 });
 
-it('can show a workspace', function (): void {
+it('redirects a workspace to its first channel', function (): void {
     $user = User::factory()->create();
     $workspace = Workspace::factory()->for($user, 'owner')->create(['name' => 'Hashane']);
+    $channel = Channel::factory()->for($workspace)->create();
 
     $this->actingAs($user)->get(route('workspace.show', $workspace))
-        ->assertStatus(200)
-        ->assertInertia(fn (Assert $page): Assert => $page
-            ->component('workspace/show')
-            ->where('workspace.id', $workspace->id)
-            ->where('workspace.name', 'Hashane')
-        );
+        ->assertRedirectToRoute('channel.show', [$workspace, $channel]);
 });
 
 it('can create workspace', function (): void {

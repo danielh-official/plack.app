@@ -12,9 +12,7 @@ use App\Http\Requests\DeleteWorkspaceRequest;
 use App\Http\Requests\UpdateWorkspaceRequest;
 use App\Models\User;
 use App\Models\Workspace;
-use App\Queries\ListWorkspace;
 use Illuminate\Container\Attributes\CurrentUser;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -32,12 +30,11 @@ final readonly class WorkspaceController
         return Inertia::render('workspace/empty');
     }
 
-    public function show(#[CurrentUser] User $user, Workspace $workspace, ListWorkspace $listWorkspace): Response
+    public function show(Workspace $workspace): RedirectResponse
     {
-        return Inertia::render('workspace/show', [
-            'workspace' => $workspace->load(['channels' => fn (HasMany $channels) => $channels->latest()]),
-            'workspaces' => $listWorkspace->get($user),
-        ]);
+        $channel = $workspace->channels()->latest()->firstOrFail();
+
+        return to_route('channel.show', [$workspace, $channel]);
     }
 
     public function store(

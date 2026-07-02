@@ -8,21 +8,13 @@ use App\Models\Workspace;
 use Inertia\Support\SessionKey;
 use Inertia\Testing\AssertableInertia as Assert;
 
-it('lists channels on the workspace', function (): void {
+it('redirects to the first channel of the workspace', function (): void {
     $user = User::factory()->create();
     $workspace = Workspace::factory()->for($user, 'owner')->create();
-
-    Channel::factory()
-        ->count(3)
-        ->for($workspace)
-        ->create();
+    $channel = Channel::factory()->for($workspace)->create();
 
     $this->actingAs($user)->get(route('workspace.show', $workspace))
-        ->assertStatus(200)
-        ->assertInertia(fn (Assert $page): Assert => $page
-            ->component('workspace/show')
-            ->has('workspace.channels', 3)
-        );
+        ->assertRedirectToRoute('channel.show', [$workspace, $channel]);
 });
 
 it('can show a channel', function (): void {
@@ -151,10 +143,11 @@ it('rejects updating a channel to a name already used in the workspace', functio
     expect($channel->refresh()->name)->toBe('random');
 });
 
-it('can delete a channel', function (): void {
+it('can delete a channel when others remain', function (): void {
     $user = User::factory()->create();
     $workspace = Workspace::factory()->for($user, 'owner')->create();
-    $channel = Channel::factory()->for($workspace)->create();
+    Channel::factory()->for($workspace)->create(['name' => 'general', 'slug' => 'general']);
+    $channel = Channel::factory()->for($workspace)->create(['name' => 'random', 'slug' => 'random']);
 
     $response = $this->actingAs($user)->delete(route('channel.destroy', [$workspace, $channel]));
 
@@ -166,7 +159,19 @@ it('can delete a channel', function (): void {
             ],
         ]);
 
-    expect($workspace->channels()->count())->toBe(0);
+    expect($workspace->channels()->count())->toBe(1);
+});
+
+it('cannot delete the last channel of a workspace', function (): void {
+    $user = User::factory()->create();
+    $workspace = Workspace::factory()->for($user, 'owner')->create();
+    $channel = Channel::factory()->for($workspace)->create();
+
+    $response = $this->actingAs($user)->delete(route('channel.destroy', [$workspace, $channel]));
+
+    $response->assertSessionHasErrors('channel');
+
+    expect($workspace->channels()->count())->toBe(1);
 });
 
 it('cannot manage channels of a workspace owned by another user', function (): void {
